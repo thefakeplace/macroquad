@@ -1,10 +1,26 @@
 //! Cross-platform mouse, keyboard (and gamepads soon) module.
 
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use crate::prelude::screen_height;
 use crate::prelude::screen_width;
 use crate::Vec2;
 use crate::{get_context, get_quad_context};
 pub use miniquad::{KeyCode, MouseButton};
+
+pub struct InputState<'a> {
+    pub keys_down: &'a HashSet<KeyCode>,
+    pub keys_pressed: &'a HashSet<KeyCode>,
+    pub keys_released: &'a HashSet<KeyCode>,
+    pub mouse_down: &'a HashSet<MouseButton>,
+    pub mouse_pressed: &'a HashSet<MouseButton>,
+    pub mouse_released: &'a HashSet<MouseButton>,
+    pub touches: &'a HashMap<u64, Touch>,
+    pub chars_pressed_queue: &'a Vec<char>,
+    pub mouse_position: &'a Vec2,
+    pub mouse_wheel: &'a Vec2,
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TouchPhase {
@@ -197,7 +213,26 @@ pub fn is_quit_requested() -> bool {
 ///
 /// Functions in this module should be used by external tools that uses miniquad system, like different UI libraries. User shouldn't use this function.
 pub mod utils {
+    use super::InputState;
     use crate::{get_context, get_quad_context};
+
+    /// Borrows the raw input state from the game.
+    pub fn get_raw_input_state<'a>() -> InputState<'a> {
+        let context = get_context();
+
+        InputState {
+            keys_down: &context.keys_down,
+            keys_pressed: &context.keys_pressed,
+            keys_released: &context.keys_released,
+            mouse_down: &context.mouse_down,
+            mouse_pressed: &context.mouse_pressed,
+            mouse_released: &context.mouse_released,
+            touches: &context.touches,
+            chars_pressed_queue: &context.chars_pressed_queue,
+            mouse_position: &context.mouse_position,
+            mouse_wheel: &context.mouse_wheel,
+        }
+    }
 
     /// Register input subscriber. Returns subscriber identifier that must be used in `repeat_all_miniquad_input`.
     pub fn register_input_subscriber() -> usize {
