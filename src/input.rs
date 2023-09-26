@@ -81,6 +81,10 @@ pub fn mouse_position_local() -> Vec2 {
 /// Returns the difference between the current mouse position and the mouse position on the previous frame.
 pub fn mouse_delta_position() -> Vec2 {
     let context = get_context();
+    let ctx = get_quad_context();
+    if let Some(delta) = ctx.get_mouse_delta() {
+        return Vec2::new(delta.0, delta.1);
+    }
 
     let current_position = mouse_position_local();
     let last_position = context.last_mouse_position.unwrap_or(current_position);
